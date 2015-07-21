@@ -1,6 +1,6 @@
 # Source this file to load the correct paths into your environment: "source ./env.sh" or ". ./env.sh" in zsh/bash.
 
-BASE_DIR=`pwd`/`dirname $0`
+BASE_DIR=`pwd`
 SRC_DIR=$BASE_DIR/src
 BIN_DIR=$BASE_DIR/bin
 LOGFILE=$BASE_DIR/logs/main.log
