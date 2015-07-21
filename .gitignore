@@ -1,0 +1,11 @@
+# Ignore cache, binaries, etc.
+
+__pycache__/
+bin/
+tmp/
+
+*pyc
+
+# Ignore logs.
+
+*.log
