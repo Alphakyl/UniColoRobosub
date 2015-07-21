@@ -6,7 +6,10 @@ BIN_DIR=bin
 TMP_DIR=tmp
 SRC_DIR=src
 
-all : dirs
+all : dirs mission
+
+mission : dirs
+	$(SYNLINK) ../$(SRC_DIR)/mission/transdec.py $(BIN_DIR)/mission
 
 dirs :
 	mkdir -p $(BIN_DIR)
