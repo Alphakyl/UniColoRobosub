@@ -11,6 +11,11 @@ log = mkLog('CONTROLLER')
 from control.pid import PIDLoop
 import control.config as config
 
+from sensors.dvl import DVL 
+from sensors.sparton import Sparton
+
+import numpy as np
+
 class RelativeController:
   def __init__(self):
     self.pidX = PIDLoop(kP = config.pid.relative.kP_X, kI = config.pid.relative.kI_X, kD = config.pid.relative.kD_X)
@@ -21,10 +26,32 @@ class RelativeController:
     self.pidP = PIDLoop(kP = config.pid.relative.kP_P, kI = config.pid.relative.kI_P, kD = config.pid.relative.kD_P)
     self.pidQ = PIDLoop(kP = config.pid.relative.kP_Y, kI = config.pid.relative.kI_Y, kD = config.pid.relative.kD_Y)
 
-  def run(self, dxT, dxA, dyT, dyA, zT, zA, rT, rA, pT, pA, qT, qA):
-    xO, yO, zO = self.pidX(dxA, dxT), self.pidY(dyA, dyT), self.pidZ(zA, zT)
-    rO, pO, qO = self.pidR(rA, rT), self.pidP(pA, pT), self.pidQ(qA, qT)
+    self.sparton = Sparton("/dev/ttyUSB0")
+    self.dvl = DVL()
 
-    log('Target (dX/dY/Z R/P/Y): {0}/{1}/{2} {3}/{4}/{5}'.format(dxT, dyT, zT, rT, pT, qT), DEBUG)
-    log('Actual (dX/dY/Z R/P/Y): {0}/{1}/{2} {3}/{4}/{5}'.format(dxA, dyA, zA, rA, pA, qA), DEBUG)
-    log('Output (dX/dY/Z R/P/Y): {0}/{1}/{2} {3}/{4}/{5}'.format(xO, yO, zO, rO, pO, qO), DEBUG)  
+    # Each column is a thruster, each row a force
+    # order: port starboard fp ap as fs sf sa
+    #   x
+    #   y
+    #   z
+    #   r
+    #   p
+    #   q
+    self.thrust_mat = np.matrix(
+            [[0.75, 0.75, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0.75, 0.75],
+             [0, 0, 0.33, 0.33, 0.33, 0.33, 0, 0],
+             [0, 0, 0.33, 0.33, -0.33, -0.33, 0, 0],
+             [0, 0, 0.33, -0.33, -0.33, 0.33, 0, 0],
+             [-0.25, 0.25, 0, 0, 0, 0, 0.25, -0.25]])
+
+  def step(self, xvel, yvel, depth, pitch, roll, yaw):
+    (xA, yA, zA) = self.dvl.read()
+    (pA, rA, qA) = self.sparton.read()
+    xO, yO, zO = self.pidX(xA, xvel), self.pidY(yA, yvel), self.pidZ(zA, depth)
+    rO, pO, qO = self.pidR(rA, roll), self.pidP(pA, pitch), self.pidQ(qA, yaw)
+
+    thrust_vec = np.matrix([xO, yO, zO, rO, pO, qO])
+    thrust_out = thrust_vec * self.thrust_mat
+
+    # TODO: take values from thrust_out and write them to thrusters

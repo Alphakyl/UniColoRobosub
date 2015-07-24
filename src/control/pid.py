@@ -26,4 +26,10 @@ class PIDLoop:
     
     self.output = (self.kP * self.error) + (self.kI * self.integral) + (self.kD * self.derivative)
 
+    # HACK: clamp output to -1 to 1 range
+    if self.output < -1:
+        self.output = -1
+    elif self.output > 1:
+        self.output = 1
+
     return self.output
