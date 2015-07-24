@@ -1,8 +1,4 @@
 #include "pd5Com.h"
-#include "../serial/serial.h"
-
-using namespace sensord;
-using namespace dvl;
 
 // Whether we are the WORKHORSE versus the EXPLORER
 // Explorer is the new one

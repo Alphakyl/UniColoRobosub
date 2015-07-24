@@ -9,11 +9,6 @@
 #include <string>
 
 using namespace std;
-using namespace sensord;
-
-namespace sensord {
-namespace dvl {
-    
 //A crude struct for a vector3 with error
 template <class T>
 struct vect3_w_err {
@@ -93,10 +88,6 @@ class Pd5Com {
 
         //a temporary value; used in every function, so pulled up for speed
         u_int8_t temp;
-};
-
-};
-
 };
 
 #endif
